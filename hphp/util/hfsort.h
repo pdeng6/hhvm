@@ -76,6 +76,9 @@ struct TargetGraph {
   template<class L>
   void printDot(char* fileName, L getLabel) const;
 
+  template<class L>
+  void printCallGraphProfile(char* fileName, L getLabel) const;
+
   std::vector<Target> targets;
   std::unordered_set<Arc, ArcHash> arcs;
 };
@@ -143,6 +146,32 @@ void TargetGraph::printDot(char* fileName, L getLabel) const {
     }
   }
   fprintf(file, "}\n");
+  fclose(file);
+}
+
+/*
+* Print cgprofile for lld-C3.
+* Use perf -e instruction to profile, and generate cgprofile for lld C3.
+* The format is:
+* EdgeCount callersymbol calleesymbol
+*/
+template<class L>
+void TargetGraph::printCallGraphProfile(char* fileName, L getLabel) const {
+  FILE* file = fopen(fileName, "wt");
+  if (!file) return;
+
+  for (size_t f = 0; f < targets.size(); f++) {
+    if (targets[f].samples == 0) continue;
+    for (auto dst : targets[f].succs) {
+      auto& arc = *arcs.find(Arc(f, dst));
+      fprintf(
+        file,
+        "%lu %s %s\n",
+        (size_t)arc.weight,
+        getLabel(f),
+        getLabel(dst));
+    }
+  }
   fclose(file);
 }
 

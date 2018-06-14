@@ -376,6 +376,11 @@ int main(int argc, char* argv[]) {
                 return cg.funcs[id].mangledNames[0].c_str();
               });
 
+  cg.printCallGraphProfile("cgprofile.txt",
+              [&](TargetId id) {
+                return cg.funcs[id].mangledNames[0].c_str();
+              });
+
   std::vector<Cluster> clusters;
 
   const char* filename;
